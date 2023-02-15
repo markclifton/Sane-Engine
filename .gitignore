@@ -1,0 +1,4 @@
+build/*
+internal/*
+sandbox/resources/*
+engine/DataPacker.exe
