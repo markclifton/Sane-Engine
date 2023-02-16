@@ -37,16 +37,16 @@ vec3 sampleOffsetDirections[20] = vec3[]
 
 float ShadowCalculation(vec3 fragPos, float attenuation)
 {
-    float totalLight = 0.f;
-    for(int i = 0; i < 20; ++i)
-    {
-        vec3 lightVec = (fragPos + sampleOffsetDirections[i]) - light.Position.xyz;
-        float sampledDist = texture(gShadowMap, lightVec).r;
-        float dist = length(lightVec);
-	    totalLight += ((dist <= sampledDist + EPSILON) ? 1.0 : SHADOW_OPACITY);
-    }
+    vec3 fragToLight = fragPos - light.Position.xyz;
 
-    return totalLight / 20.f * attenuation;
+    float closestDepth = texture(gShadowMap, fragToLight).r;
+
+    float currentDepth = length(fragToLight);
+
+    float bias = 50;
+    float shadow = (currentDepth -  bias) > closestDepth ? 0.0 : 1.0;        
+ 
+    return shadow * attenuation;
 }
 
 void main() {
@@ -76,7 +76,7 @@ void main() {
     specular *= attenuation;
 
     lighting += diffuse + specular;
-    lighting *= ShadowCalculation(FragPos, attenuation) * attenuation;
+    lighting *= ShadowCalculation(FragPos, attenuation);
 
     if(FragPos != vec3(0,0,0)){
         FragColor = vec4(lighting, 1.0);

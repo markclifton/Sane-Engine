@@ -1,3 +1,7 @@
 build/*
 internal/*
 engine/DataPacker.exe
+
+.vscode/
+
+sandbox/include/ManifestHeader.hpp
