@@ -23,7 +23,7 @@
 template <typename genType>
 GLM_FUNC_QUALIFIER GLM_CONSTEXPR genType pi() { return genType(3.14159265358979323846264338327950288); }
 
-#define SHADOWMAP_RESOLUTION 1024
+#define SHADOWMAP_RESOLUTION 4096
 
 struct GBufferUniforms
 {
@@ -74,6 +74,7 @@ class Mesh : public Drawable
 {
 public:
 	Mesh() {}
+
 	Mesh(GE::Gfx::ModelObject* object) : object(object) 
 	{
 		auto& registry = GE::GlobalRegistry();
@@ -82,6 +83,7 @@ public:
 		registry.emplace<Object>(entity, this);
 		registry.emplace<CenterOfMass>(entity, object->centerOfMass);
 	}
+
 	virtual ~Mesh()
 	{
 		if (loaded) {
@@ -261,10 +263,10 @@ public:
 		}
 
 		_sun = Light {
-			{500, 1500, 0, 0 },
-			{1,1,1,0},
-			.0000007f,
-			.00000018f
+			{500, 2500, 0, 0 },
+			{255.f/255.f, 228.f/255.f, 132.f/255.f, 0},
+			.00002f,
+			.00024f
 			};
 
 		_compositionPassVertexBuffer.Create(vertices.size() * sizeof(Vertex));
@@ -360,6 +362,8 @@ public:
 		commandBuffers.Destroy();
 	}
 
+	float count = -25.f;
+	float prevCount = 0.f;
 	virtual void RenderScene() override
 	{
 		if (!_loadedResources)
@@ -367,6 +371,23 @@ public:
 
 		auto currentFrame = GE::Gfx::GetCurrentFrame();
 		auto view = GE::GlobalRegistry().view<const Object, const Visibility, const CenterOfMass>();
+
+		//GE_INFO("Position: {},{},{}", _cameraData.position.x,  _cameraData.position.y,  _cameraData.position.z);
+		if(count != prevCount)
+		{
+			auto mat = glm::rotate(glm::mat4(1.f), glm::radians(count), {1, 0, 1 });
+			_sun.Position = mat * glm::vec4(500,3750,0,0);
+			//if(count++ == 36000) { count = 0; }
+
+			_sunDataBuffer.Buffer(commandBuffers.GetBuffer(), &_sun, sizeof(Light));
+			VkDescriptorBufferInfo lightBufferInfo{ _sunDataBuffer, 0, sizeof(Light) };
+			descriptorPool.UpdateDescriptorBuffer(1, currentFrame, 5u, &lightBufferInfo);
+
+			descriptorPool.WriteDescriptorSet(1, currentFrame);
+
+			_renderShadowCube = true;
+			prevCount = count;
+		}
 
 		// Generate G-Buffer Textures
 		{
@@ -414,7 +435,7 @@ public:
 		if(_renderShadowCube)
 		{
 			float zNear = 0.1f;
-			float zFar = 2048.0f;
+			float zFar = 4096.0f;
 
 			ShadowMapUniforms shadowMapUniforms;
 			shadowMapUniforms.projection = glm::perspective((float)(pi<float>() / 2.0), 1.0f, zNear, zFar) * glm::scale(glm::mat4(1.f), { 1,-1,1 });

@@ -23,8 +23,7 @@ layout(binding = 5) uniform LightData {
     Light light;
 };
 
-#define EPSILON 0.20
-#define SHADOW_OPACITY 0.05
+#define EPSILON 0.75
 
 vec3 sampleOffsetDirections[20] = vec3[]
 (
@@ -35,18 +34,28 @@ vec3 sampleOffsetDirections[20] = vec3[]
    vec3( 0,  1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0,  1, -1)
 ); 
 
-float ShadowCalculation(vec3 fragPos, float attenuation)
+float ShadowCalculation(vec3 fragPos)
 {
     vec3 fragToLight = fragPos - light.Position.xyz;
-
     float closestDepth = texture(gShadowMap, fragToLight).r;
-
     float currentDepth = length(fragToLight);
 
-    float bias = 50;
-    float shadow = (currentDepth -  bias) > closestDepth ? 0.0 : 1.0;        
- 
-    return shadow * attenuation;
+    float bias = 7.5;
+    return (currentDepth -  bias) > closestDepth ? 0.35 : 1.0;        
+}
+
+float ShadowCalculation2(vec3 fragPos)
+{
+    float totalLight = 0.f;
+    for(int i = 0; i < 20; ++i)
+    {
+        vec3 lightVec = (fragPos + sampleOffsetDirections[i]) - light.Position.xyz;
+        float sampledDist = texture(gShadowMap, lightVec).r;
+        float dist = length(lightVec);
+	    totalLight += ((dist <= sampledDist + EPSILON) ? 1.0 : 0.35);
+    }
+
+    return totalLight / 20.f;
 }
 
 void main() {
@@ -57,7 +66,7 @@ void main() {
     float Specular = texture(gAlbedoSpec, TexCoords).a;
     
     // then calculate lighting as usual
-    vec3 lighting  = Diffuse * 0.5; // hard-coded ambient component
+    vec3 lighting  = Diffuse; // hard-coded ambient component
     vec3 viewDir  = normalize(viewPos.xyz - FragPos);
 
     // diffuse
@@ -71,12 +80,15 @@ void main() {
 
     // attenuation
     float distance = length(light.Position.xyz - FragPos);
-    float attenuation = 1.0 / (1.0 + light.Linear * distance + light.Quadratic * distance * distance);
-    diffuse *= attenuation;
-    specular *= attenuation;
+    //float attenuation = 1.0 / (1.0 + light.Linear * distance + light.Quadratic * distance * distance);
 
-    lighting += diffuse + specular;
-    lighting *= ShadowCalculation(FragPos, attenuation);
+    float shadow = ShadowCalculation2(FragPos);
+    if(shadow > .5) {
+        lighting += (diffuse + specular);
+    } else {
+        lighting += diffuse;
+    }
+    lighting *= shadow;
 
     if(FragPos != vec3(0,0,0)){
         FragColor = vec4(lighting, 1.0);
