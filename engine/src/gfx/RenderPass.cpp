@@ -167,6 +167,12 @@ namespace GE
 			vkCmdSetScissor(cmdBuffer, 0, 1, &scissor);
 		}
 
+		void ScreenSpaceRenderPass::SetInput(VulkanDescriptorsPool& pool, int setIndex, int index, VulkanTexture& inputTexture) {
+			VkDescriptorImageInfo gColor{ inputTexture.Sampler(), inputTexture.ImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
+			pool.UpdateDescriptorImage(setIndex, index, 0u, &gColor, 1);
+			pool.WriteDescriptorSet(setIndex, index);
+		};
+
 		void FrameBufferRenderPass::Create()
 		{
 			_pipeline = std::make_unique<VulkanOffscreenPipeline>();

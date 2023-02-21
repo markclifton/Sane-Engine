@@ -90,8 +90,8 @@ namespace GE
             Delete,            //!<  DELETE key
             End,               //!<  END key
             PageDown,          //!<  PAGE DOWN key
-            RightArrow,        //!<  RIGHT ARROW key
-            LeftArrow,         //!<  LEFT ARROW key
+            RightArrow = 262,  //!<  RIGHT ARROW key
+            LeftArrow = 263,   //!<  LEFT ARROW key
             DownArrow,         //!<  DOWN ARROW key
             UpArrow,           //!<  UP ARROW key
             NumLock,           //!<  NUM LOCK key

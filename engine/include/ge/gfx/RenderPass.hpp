@@ -5,6 +5,7 @@
 
 #include <ge/gfx/Common.hpp>
 
+#include <ge/gfx/Descriptor.hpp>
 #include <ge/gfx/Framebuffer.hpp>
 #include <ge/gfx/Pipeline.hpp>
 #include <ge/gfx/Texture.hpp>
@@ -65,6 +66,8 @@ namespace GE
 
 			void Configure();
 			virtual void Begin(VkCommandBuffer cmdBuffer) override;
+
+			void SetInput(VulkanDescriptorsPool& pool, int setIndex, int index, VulkanTexture& inputTexture);
 		};
 
 		class FrameBufferRenderPass : public RenderPass

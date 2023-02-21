@@ -91,7 +91,7 @@ namespace GE
 
 			ImGuiIO& io = ImGui::GetIO();
 			io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-			io.DisplaySize = ImVec2(static_cast<float>(1280), static_cast<float>(720));
+			io.DisplaySize = ImVec2(static_cast<float>(Gfx::GetFrameWidth()), static_cast<float>(Gfx::GetFrameHeight()));
 #ifdef _WIN32
 			io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
 #else

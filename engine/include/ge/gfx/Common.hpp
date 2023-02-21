@@ -36,6 +36,8 @@ namespace GE
 
 		uint32_t GetCurrentFrame();
 		uint32_t GetNumFrames();
+		uint32_t GetFrameWidth();
+		uint32_t GetFrameHeight();
 
 		struct vulkan_buffer_ready
 		{

@@ -29,8 +29,9 @@ if($LastExitCode -gt 0 -and $LastExitCode -ne 2 ){
 
     Get-ChildItem $DEST\"shaders" -Exclude *.exe,*.bat,*.spv | Where{$_.LastWriteTime -gt $lastRecompileTime} | Foreach-Object {
         Write-Output "Recompiling: $_"
+
         $newPath=$_.FullName+".spv"
-        & $glslangValidator -V $_.FullName -o $newPath
+        & $glslangValidator -V $_.FullName -o $newPath | out-null
         if($RELEASE) { Remove-Item $_ }
     }
     if($RELEASE) { Remove-Item $DEST\shaders\glslangValidator.exe }
@@ -43,7 +44,6 @@ if($LastExitCode -gt 0 -and $LastExitCode -ne 2 ){
 
     $headerFile=$SRC+"..\include\ManifestHeader.hpp"
     if(!(Test-Path -Path $headerFile)) {
-        Write-Output "Path: " + $headerFile
         New-Item $headerFile -ItemType file
     }
     "#pragma once" | Out-File -FilePath $headerFile -Encoding utf8

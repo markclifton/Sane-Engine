@@ -220,7 +220,7 @@ public:
 				});
 
 			_gbufferPass.AddDescriptorsSetLayouts({ descriptorPool.GetDescriptorSetLayout(0) });
-			_gbufferPass.Configure(GE::Gfx::GetNumFrames(), 1280, 720);
+			_gbufferPass.Configure(GE::Gfx::GetNumFrames(), GE::Gfx::GetFrameWidth(), GE::Gfx::GetFrameHeight());
 			_gbufferPass.Create();
 		}
 		{
@@ -249,7 +249,7 @@ public:
 			_compositionPass.AddVertexAttribDescs(Vertex::getAttributeDescriptions());
 
 			_compositionPass.AddDescriptorsSetLayouts({ descriptorPool.GetDescriptorSetLayout(1) });
-			_compositionPass.Configure(GE::Gfx::GetNumFrames(), 1280, 720);
+			_compositionPass.Configure(GE::Gfx::GetNumFrames(), GE::Gfx::GetFrameWidth(), GE::Gfx::GetFrameHeight());
 			_compositionPass.Create();
 		}
 		{
@@ -336,9 +336,7 @@ public:
 			}
 			// Final Render Pass Descriptors
 			{
-				VkDescriptorImageInfo gColor{ _compositionPass.GetColorTexture(i).Sampler(), _compositionPass.GetColorTexture(i).ImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
-				descriptorPool.UpdateDescriptorImage(3, i, 0u, &gColor, 1);
-				descriptorPool.WriteDescriptorSet(3, i);
+				_finalPass.SetInput(descriptorPool, 3, i, _compositionPass.GetColorTexture(i));
 			}
 		}
 	}
@@ -417,12 +415,12 @@ public:
 			std::vector<std::pair<Drawable*, float>> objects;
 			view.each([&](const Object obj, const Visibility visibility, const CenterOfMass centerOfMass) {
 				if (visibility) {
-					objects.push_back({ obj.drawable, glm::length(_cameraData.position - centerOfMass)});
+					objects.push_back({ obj.drawable, glm::length(centerOfMass - _cameraData.position)});
 				}
 			});
 
 			// Sort objects by distance (front to back)
-			std::sort(objects.begin(), objects.end(), [](const std::pair<Drawable*, float>& a, const std::pair<Drawable*, float>& b) -> bool { return a.second < b.second; });
+			std::sort(objects.begin(), objects.end(), [](const std::pair<Drawable*, float>& a, const std::pair<Drawable*, float>& b) -> bool { return a.second > b.second; });
 			for (auto& obj : objects) {
 				obj.first->Draw(currentBuffer, &descriptorPool.GetDescriptorSet(0, currentFrame), currentFrame);
 			}
@@ -567,13 +565,11 @@ public:
 		vkDeviceWaitIdle(*GE::Gfx::VulkanCore::Get().device);
 		if (evt.recreate)
 		{
-			_finalPass.Resize(GE::Gfx::VulkanCore::Get().swapchain->GetExtent());
+			_finalPass.Resize(GE::Gfx::GetFrameWidth(), GE::Gfx::GetFrameHeight());
 
 			for (uint32_t i = 0; i < GE::Gfx::GetNumFrames(); i++)
 			{
-				VkDescriptorImageInfo gColor{ _compositionPass.GetColorTexture(i).Sampler(), _compositionPass.GetColorTexture(i).ImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
-				descriptorPool.UpdateDescriptorImage(3, i, 0u, &gColor, 1);
-				descriptorPool.WriteDescriptorSet(3, i);
+				_finalPass.SetInput(descriptorPool, 3, i, _compositionPass.GetColorTexture(i));
 			}
 		}
 	}

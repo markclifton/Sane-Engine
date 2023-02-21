@@ -100,10 +100,11 @@ namespace GE
 							object.texCoords.push_back({ tx, ty });
 						}
 					}
-					object.centerOfMass /= fv;
 
 					index_offset += fv;
 				}
+				
+				object.centerOfMass /= object.vertices.size();
 
 				objects.push_back(object);
 			}

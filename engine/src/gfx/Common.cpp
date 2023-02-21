@@ -19,6 +19,16 @@ namespace GE
 			return VulkanCore::Get().swapchain->GetNumImages();
 		}
 
+		uint32_t GetFrameWidth() 
+		{
+			return VulkanCore::Get().swapchain->GetExtent().width;
+		}
+
+		uint32_t GetFrameHeight()
+		{
+			return VulkanCore::Get().swapchain->GetExtent().height;
+		}
+
 		VulkanGfxElement::VulkanGfxElement()
 			: _core(VulkanCore::Get())
 		{}
