@@ -46,7 +46,7 @@ namespace GE
 		{
 			glfwInit();
 			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-			_window = glfwCreateWindow(_width, _height, "NintendoSDK Application", NULL, NULL);
+			_window = glfwCreateWindow(_width, _height, "Sandbox", NULL, NULL);
 
 			glfwSetWindowUserPointer(_window, this);
 		}

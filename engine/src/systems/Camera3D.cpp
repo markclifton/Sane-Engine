@@ -12,7 +12,7 @@ namespace GE
 			: GE::Sys::System("Camera3D") 
 		{
 			_currentCameraData.projection = glm::perspective(45.f, 16.f / 9.f, .1f, 10000.f);
-			_currentCameraData.position = glm::vec3(100.f, -140.f, 0.f);
+			_currentCameraData.position = glm::vec3(-920.278f,-610.9918f,-119.911026f);
 			_currentCameraData.view = glm::mat4(1.f);
 
 			REGISTER_SYSTEM();

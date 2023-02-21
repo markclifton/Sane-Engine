@@ -16,8 +16,19 @@ robocopy $SRC"..\..\internal\SaneEngine\include\resources\" $DEST"..\resources\"
 $glslangValidator=$SRC+"../../engine/glslangValidator.exe"
 
 if($LastExitCode -gt 0 -and $LastExitCode -ne 2 ){
-    Write-Output "Recompiling Shaders..."
-    Get-ChildItem $DEST\"shaders" -Exclude *.exe,*.bat,*.spv | Foreach-Object {
+    $lastRecompileTimeLog=$SRC+"lastRecompileTime.log"
+
+    if(Test-Path -Path $lastRecompileTimeLog) {
+        $lastRecompileTime=(ls $lastRecompileTimeLog).LastWriteTime
+    } else {
+        New-Item -Path $lastRecompileTimeLog -ItemType File | out-null
+        $lastRecompileTime=Get-Date -Date "01/01/1970"
+    }
+
+    Get-Date | Out-File -FilePath $lastRecompileTimeLog -Encoding utf8
+
+    Get-ChildItem $DEST\"shaders" -Exclude *.exe,*.bat,*.spv | Where{$_.LastWriteTime -gt $lastRecompileTime} | Foreach-Object {
+        Write-Output "Recompiling: $_"
         $newPath=$_.FullName+".spv"
         & $glslangValidator -V $_.FullName -o $newPath
         if($RELEASE) { Remove-Item $_ }

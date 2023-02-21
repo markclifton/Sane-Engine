@@ -5,3 +5,9 @@ engine/DataPacker.exe
 .vscode/
 
 sandbox/include/ManifestHeader.hpp
+
+sandbox/resources/lastRecompileTime.log
+
+engine/lastRecompileTime.log
+
+enginelastRecompileTime.log
